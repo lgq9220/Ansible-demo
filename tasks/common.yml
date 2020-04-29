@@ -1,0 +1,60 @@
+---
+- name: init
+  file:
+    path: "{{ role_path }}/{{ tmpfile }}"
+    state: touch
+  run_once: true
+  delegate_to: localhost
+- name: store
+  shell:
+    cmd: "echo {{ inventory_hostname }} >> {{ role_path }}/{{ tmpfile }}"
+  delegate_to: localhost
+- name: statistics
+  script:
+    cmd: "{{ playbook_dir }}/files/service-statistics.sh '{{ ansible_play_hosts|join(' ') }}' {{ role_path }}/{{ tmpfile }} {{ app_instance }}"
+  register: serviceStatisticsResponse
+  run_once: true
+  delegate_to: localhost
+- name: debug
+  debug:
+    msg: "{{ serviceStatisticsResponse.stdout_lines[0] }}"
+  when: debug
+- name: deploy
+  block:
+    - name: run deploy playbook
+      shell:
+        cmd: "ansible-playbook -t deploy -e targetHosts={{ serviceStatisticsResponse.stdout_lines[0].split(' ')[1] }} -e appName={{ app_name }} {{ playbook_dir }}/scalling-service.yml"
+      register: deployResponse
+    - name: debug deploy response
+      debug:
+        msg: "{{ deployResponse.stdout_lines }}"
+  delegate_to: localhost
+  run_once: true
+  when: serviceStatisticsResponse.stdout_lines[0].split(' ')[0] == "deploy"
+- name: terminal
+  block:
+    - name: run terminal playbook
+      shell:
+        cmd: "ansible-playbook -t terminal -e targetHosts={{ serviceStatisticsResponse.stdout_lines[0].split(' ')[1] }} -e appName={{ app_name }} {{ playbook_dir }}/scalling-service.yml"
+      register: terminalResponse
+    - name: debug terminal response
+      debug:
+        msg: "{{ terminalResponse.stdout_lines }}"
+  delegate_to: localhost
+  run_once: true
+  when: serviceStatisticsResponse.stdout_lines[0].split(' ')[0] == "terminal"
+- name: empty
+  debug:
+    msg: "no need to do service scalling"
+  delegate_to: localhost
+  run_once: true
+  when: serviceStatisticsResponse.stdout_lines[0] == "empty"
+- name: clean
+  block:
+    - name: clean local tmp data file
+      file:
+        path: "{{ role_path }}/{{ tmpfile }}"
+        state: absent
+      run_once: true
+      delegate_to: localhost
+  ignore_errors: true

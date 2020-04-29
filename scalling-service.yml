@@ -1,0 +1,15 @@
+---
+- hosts: "{{ targetHosts }}"
+  gather_facts: no
+  vars:
+    project_path: "/apps/ratanrt/services"
+    project_bin_path: "/apps/ratanrt/bin/services"
+    project_deploy_path: ""
+    app_download_base_url: ""
+  roles:
+    - role: deploy-service
+      tags:
+        - deploy
+    - role: terminal-service
+      tags:
+        - terminal

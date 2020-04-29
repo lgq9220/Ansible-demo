@@ -1,0 +1,8 @@
+---
+app_name: rest-service
+app_instance: 3
+app_port: 8001
+app_version: 1.1
+
+debug: true
+tmpfile: "{{ app_name }}.tmp"

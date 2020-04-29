@@ -1,0 +1,21 @@
+---
+- name: "name={{ app_name }}, port={{ app_port }}, version={{ app_version }}, instance={{ app_instance }}"
+  set_stats:
+    data: {}
+# - name: copy service manage script
+#   copy:
+#     src: "{{ project_bin_path }}/{{ app_script_name }}"
+#     dest: "{{ project_bin_path }}/"
+#     mode: '0755'
+#     force: yes
+#   become: yes
+- name: check
+  script:
+    cmd: "./rest-service-check.sh"
+  register: healthResponse
+# - name: debug
+#   debug:
+#     msg: "{{ healthResponse.stdout }} {{ tmpfile }}"
+- name: include task
+  import_tasks: "{{ playbook_dir }}/tasks/common.yml"
+  when: healthResponse.stdout|int == 1

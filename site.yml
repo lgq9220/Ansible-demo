@@ -1,0 +1,11 @@
+---
+- hosts: koma,yehe
+  gather_facts: no
+  roles:
+    - role: rest-service
+      tags:
+        - rest
+    - role: exception-service
+      tags:
+        - exception
+

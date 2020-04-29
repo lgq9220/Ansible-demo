@@ -1,0 +1,14 @@
+---
+- name: "name={{ app_name }}, port={{ app_port }}, version={{ app_version }}, instance={{ app_instance }}"
+  set_stats:
+    data: {}
+- name: check
+  script:
+    cmd: "./rest-service-check.sh"
+  register: healthResponse
+# - name: debug
+#   debug:
+#     msg: "{{ healthResponse.stdout }} {{ tmpfile }}"
+- name: include task
+  import_tasks: "{{ playbook_dir }}/tasks/common.yml"
+  when: healthResponse.stdout|int == 1

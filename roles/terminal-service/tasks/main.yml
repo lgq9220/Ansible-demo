@@ -1,0 +1,4 @@
+---
+- name: show app info
+  debug:
+    msg: "{{ appName }}"
